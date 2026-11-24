@@ -1,0 +1,95 @@
+<div class="viz-root" role="region" aria-label="Personajes de Pixar">
+  <!-- Hero / Summary -->
+  <section class="viz-hero" aria-hidden="true">
+    <h1 class="viz-title">Personajes de Pixar</h1>
+    <p class="viz-subtitle">{{ personajes().length }} personajes cargados</p>
+  </section>
+
+  <!-- Bar Chart: Characters per Movie -->
+  <section class="viz-chart" aria-labelledby="chart-title">
+    <h2 id="chart-title" class="viz-chart-title">Personajes por película</h2>
+    <div class="chart-container" role="img" aria-label="Gráfico de barras: número de personajes por película">
+      <svg class="chart-svg" [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" preserveAspectRatio="xMidYMid meet">
+        <!-- Y-axis grid lines & labels -->
+        <g class="y-grid" *ngFor="let tick of yTicks()">
+          <line [attr.x1]="marginLeft" [attr.x2]="chartWidth - marginRight" [attr.y1]="tick.y" [attr.y2]="tick.y" />
+          <text [attr.x]="marginLeft - 8" [attr.y]="tick.y + 4" class="axis-label" text-anchor="end">{{ tick.value }}</text>
+        </g>
+
+        <!-- X-axis baseline -->
+        <line class="axis-baseline" [attr.x1]="marginLeft" [attr.x2]="chartWidth - marginRight" [attr.y1]="chartHeight - marginBottom" [attr.y2]="chartHeight - marginBottom" />
+
+        <!-- Bars -->
+        <g class="bars">
+          <ng-container *ngFor="let item of movieData(); let i = index">
+            <rect
+              class="bar"
+              [attr.x]="barX(i)"
+              [attr.y]="barY(item.count)"
+              [attr.width]="barWidth()"
+              [attr.height]="barHeight(item.count)"
+              [attr.fill]="barColor(i)"
+              [attr.data-movie]="item.movie"
+              [attr.data-count]="item.count"
+              role="graphics-symbol"
+              [attr.aria-label]="'{{ item.movie }}: {{ item.count }} personajes'"
+            />
+            <!-- Value label on top of bar -->
+            <text
+              class="bar-value"
+              [attr.x]="barX(i) + barWidth() / 2"
+              [attr.y]="barY(item.count) - 4"
+              text-anchor="middle"
+            >{{ item.count }}</text>
+
+            <!-- Movie name label below bar -->
+            <text
+              class="bar-label"
+              [attr.x]="barX(i) + barWidth() / 2"
+              [attr.y]="chartHeight - marginBottom + 18"
+              text-anchor="middle"
+            >{{ truncateMovieName(item.movie) }}</text>
+          </ng-container>
+        </g>
+      </svg>
+    </div>
+    <!-- Table fallback for accessibility -->
+    <table class="chart-table" aria-hidden="true">
+      <thead>
+        <tr>
+          <th scope="col">Película</th>
+          <th scope="col">Personajes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of movieData()">
+          <td>{{ item.movie }}</td>
+          <td>{{ item.count }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Character Grid -->
+  <section class="viz-grid-section" aria-labelledby="grid-title">
+    <h2 id="grid-title" class="viz-chart-title">Galería de personajes</h2>
+    <div class="character-grid" role="list">
+      <article class="character-card" *ngFor="let p of personajes()" role="listitem">
+        <div class="card-image-wrapper">
+          <img
+            [src]="p.imagen"
+            [alt]="p.nombre + ' de ' + p.pelicula"
+            class="card-image"
+            loading="lazy"
+            (error)="onImageError($event)"
+          />
+        </div>
+        <div class="card-content">
+          <h3 class="card-name">{{ p.nombre }}</h3>
+          <p class="card-movie">{{ p.pelicula }}</p>
+        </div>
+      </article>
+    </div>
+    <p class="viz-empty" *ngIf="personajes().length === 0">No hay personajes para mostrar.</p>
+  </section>
+</div>
